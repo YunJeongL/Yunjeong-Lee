@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <caption>"{{team['name']}}"의 세부 정보</caption>
+        <button onclick="history.back();">검색이동</button>
+        <a href="/info/{{team.name}}?q=update">수정</a>
+        <form action='/updateTeam' method='post'>
+            {% if flag: %}
+            <input type='submit' value='팀 정보 수정하기'/>
+            {% endif %} 
+            <table border="1" cellspacing="0" width="80%" style="margin:10px;">
+       
+        
+            <thead>
+                <tr>
+                    <th>제목</th>
+                    <th>내용</th>
+                </tr>
+            </thead>
+            <tbody>
+                    {% for key in team: %}
+                    <tr>
+                        <td>{{key}}</td>
+                        {# 수정하라고 flag값을 설정하고, 현재 키가 name이 아닌 경우 #}
+                        {% if flag: %}
+                        {# input의 name 속성은 해당 데이터의 키에 해당 #}
+                        <td>
+                        {% if key != 'name' : %}
+                            <input value = '{{team[key]}}' name = {{key}} />
+                        {% else : %}
+                            {# 수정 못하게 readonly 속성부여 #}
+                            <input value= '{{team[key]}}' name='{{key}}' readonly/>
+                        {% endif %}
+                        </td>
+                    {% else: %}
+                        <td>{{team[key]}}</td>
+                    {% endif %} 
+                </tr>
+                {% endfor %} 
+            </tbody>
+            </table>
+        </form>
+    </body>
+</html>

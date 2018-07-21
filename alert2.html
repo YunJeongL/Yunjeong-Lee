@@ -1,0 +1,11 @@
+<script>
+        alert("{{ msg }}");     //팝업 띄우기
+        {% if url: %}
+                // 다른 페이지로 돌아가기(정상케이스)
+                document.location.href='{{ url }}'; // 다른 페이지 이동
+        {% else %}
+                // 이전 페이지로 이동하기(에러케이스)
+                history.back(); 
+                
+        {% endif %}
+</script>

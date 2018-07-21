@@ -1,0 +1,38 @@
+<!-- html : hyper text markup language -->
+<!--브라우저는 3번의 표식을 보고 이 문서가 html5 규격을 따르는 문서라고 인식한다-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{name}}</title>
+        <!-- html 문서의 메타 정보(문서를 기술하는 정보)를 표현하는 위치 -->
+    </head>
+    <body>
+        <img src = '/static/img/logo.png' height = '100px'/>
+        <h2>{{name}}</h2>
+        <h3>{{name}}</h3>
+        <h4>{{name}}</h4>
+        <h5>{{name}}</h5>
+        <!-- 눈에 모이는 모든 부분 -->
+        <!-- 사용자로부터 아이디와 비번 입력받아라
+             로그인 버튼을 누르면 로그인 처리하는 페이지로
+             아이디와 비번을 가지고 요청한다
+             -> 해당 페이지는 아이디 비번 가지고 디비에 쿼리
+             -> 쿼리 결과 회원이면 -> 정상 처리(서비스이동)
+             -> 회원아니면 메시지 처리(가입,재로그인 유도)
+        -->
+        <!--<a href='https://m.naver.com'>페이지이동 링크</a>-->
+        <fieldset>
+            <!-- 데이터를 전송한다 => form 태그 담당 -->
+            <form action='/login' method='post'>
+                <!-- name 속성은 데이터 하나의 키를 의미한다 uid=xxx -->
+                <input type='text' name='uid' placeholder="아이디" autofocus required/>
+                <br/>
+                <input type='password' name='upw' placeholder="비밀번호" required/>
+                <br/>
+                <!--<input type='submit' value='로그인'/>-->
+                
+                <button>로그인</button>
+            </form>
+        </fieldset>
+    </body>
+</html>

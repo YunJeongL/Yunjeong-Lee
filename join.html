@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{title}}</title> 
+        <!-- jquery 설치 완료 -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script>
+            //문서(html)가 모두 메모리에 로드되었다
+            //브라우저가 화면에 결과물을 보이게하는 시점 -> 화면이 보이기 직전
+            //jquery selector => $('css selector')
+            alert('111')
+            //문서가 메모리에 올라오면 브라우저가 ready() 호출한다
+            // ready() 내부에서 전달한 인자(콜백함수)를 호출한다(브라우저가)
+            // 객체.ready(인자=함수)
+            // document => 문서객체 => html이 메모리에 올라간 문서가 준비되었다 jquery
+            $(document).ready(function(){
+                //문서가 준비되면 함수를 인자로 보낼테니 호출해달라
+                //호출되면 그 시점을 나는 문서를 조작할 수 있는 타이밍으로 보겠다
+                alert('문서 조작 시작')
+                $('#joinForm');
+                //document.querySelector('#joinForm');
+            });
+        </script>
+    </head>
+    <body>
+        <fieldset>
+                <form id='joinForm'>
+                    <input type='text' name='uid' placeholder="아이디" required/>
+                    <input type='password' name='upw' placeholder="비밀번호" required/>
+                    <input type='text' name='name' placeholder="이름" required/>
+                    <input type='submit' name='가입'/>
+                </form>
+        </fieldset>
+        <script>
+                //form 태그의 전송 요청을 인터셉트 하겠다
+                var obj = document.querySelector('#joinForm');
+                console.log(obj);
+        </script>
+    </body>
+</html>
