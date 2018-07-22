@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <!-- 입력창에 입력한 내용을 버튼 클릭하면 7번 내용에 반영된다 -->
+        <input type='text' id='searchKeyword'/>
+        <button onclick='search();'>검색</button>
+        <div>검색어:<b></b></div>
+        <div id='resultShowBase' style='border:1px solid red;'>
+            <div>순위 1 : 팀명</div>
+            <div>순위 2 : 팀명</div>
+        </div>
+        <script>
+        // input 태그를 찾아서 엔터 이벤트를 붙인다 -> search() 호출
+        // 자바스크립트에서 특정 요소에게 이벤트를 붙이는 방법 .on('이벤트명', 콜백함수); 정의/등록
+        $('#searchKeyword').on('keypress', function(evt){
+            console.log(evt.keyCode);
+            //엔터치면 search() 호출
+            if(evt.keyCode == 13){
+                search();
+            }
+        });
+        $('#searchKeyword').on();
+           function search(){
+               //console.log('hi');
+               // 입력 내용을 획득
+               var inputValue = $('#searchKeyword').val();
+               console.log(inputValue);
+               // b 태그 내부에 덮어쓴다(지우고 추가한다)
+               $('b').empty();  // b 태그의 자식을 지운다
+               $('b').append(inputValue);  // b 태그의 자식으로 추가한다
+               searchNet();
+           }
+           function searchNet(){
+               // POST 통신 -> ajax 기술 이용 -> 현재 화면은 그대로 존재 -> 뒤에서 통신
+               // data : 'keyword = 검색어' ex) 'keyword=검색어&name=xxx&age=10...''
+               $.post({
+                   url:'/search',
+                   data:'keyword='+$('#searchKeyword').val(),
+                   dataType:'json',
+                   success:function(resData){
+                       // 검색 결과를 화면에 표시하기 위해 함수 호출
+                       searchResultShow(resData)
+                       //console.log('성공', resData);
+                       //$('#searchKeyword').val('');  // 입력창 비우기
+                       // 임시 검색 결과 표현
+                       //$('b').append("<span style='color:red;'> =>" + resData.name + "</span>");
+                   },
+                   error:function(err){
+                       console.log('실패', err);
+                   }
+               });
+           }
+           function searchResultShow(data){
+               //data가 들어오면 데이터를 획득하여 html 화면에 동적으로 표현
+               // $.each(배열, 콜백함수);는 배열(리스트) 데이터를 반복적으로 처리할 때 사용
+               $('#resultShowBase').empty();
+               $.each(data, (idx, item)=>{
+                   //console.log(idx, item)
+                   console.log(item.rank, item.name);
+                   var html = `<div>순위 ${item.rank} : ${item.name} </div>`;
+                   $('#resultShowBase').append(html);
+                   // 방금 추가된 div
+                   $('#resultShowBase>div:last').on('click',()=>{
+                       //alert(item.name)
+                       // ~/info/맨체스터..
+                       document.location.href='/info/'+item.name
+                   })
+
+               });
+               // 데코레이션 css 적용
+               // 의사결정 셀렉터 => 대상군 : odd or ever eq(), lt(), gt(), first, last
+               $('#resultShowBase>div:odd').css('background-color','lightgreen');
+               // 막내만 그레이로 배경색
+               $('#resultShowBase>div:last').css('background-color','grey');
+           }
+        
+        </script>
+    </body>
+</html>
