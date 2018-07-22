@@ -1,55 +1,87 @@
-from flask import Flask, request, url_for, render_template, redirect, jsonify
-# 내가 만든 모듈(디비 처리부분) import
-from model.d1_8 import searchSql, selectTeamName, updateTeamInfo
+from flask import Flask, render_template, redirect, url_for, session, request, jsonify
+# 환경설정 클래스 모듈 가져오기
+from service.config import WebConfig
+from service.model.dbMgr import loginSql, searchSql, selectAllEplList
 
 app = Flask(__name__)
+# 세션생성에 필요한 세션키(중복되지 않는 해쉬값)를 정의
+app.secret_key = 'dlghkdhlrh'
+config = WebConfig()
 
-# 페이지 구성
-# 홈페이지 : ~/
+# 세션이 없어도 접근 가능한 페이지는 오직 로그인
+# 세션생성, 세션종료, 세션체크
+@app.route('/login', methods=['POST','GET'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html',config=config)
+    else:
+        uid = request.form['uid']
+        upw = request.form['upw']
+        row = loginSql(uid, upw)
+        # if false : [], (), {}, 0, ""
+        # row => dict => {}
+        if row : 
+            # 세션처리(필요한 정보를 세션으로 저장한다)
+            # 사용자 아이디와 이름 저장하겠다
+            session['uid'] = uid
+            session['name'] = row['name']
+            return redirect(url_for('home'))
+        else:
+            return render_template('common/alert2.html', msg='회원아님')
+
+# 홈페이지
 @app.route('/')
 def home():
-    return render_template('index.html', title='홈페이지')
+    # 세션이 없으면 /login으로 리다이렉트
+    if not 'uid' in session:  # 세션 없으면 false -> 부정 -> 참
+        return redirect(url_for('login'))
+    ###########################################################   
+    return render_template('index.html', config = config)
 
-@app.route('/join')
-def join():
-    return render_template('test.1.html', title='회원가입')
+# 로그아웃
+@app.route('/logout')
+def logout():
+    if not 'uid' in session:  # 세션 없으면 false -> 부정 -> 참
+        return redirect(url_for('login'))
+    # 세션 종료
+    print(session)
 
+    if 'uid' in session:
+        session.pop('uid', None)
+    if 'name' in session:
+        session.pop('name', None)
+
+    print('세션제거후->', session)
+  
+    # 페이지 요청을 리다이렉트 -> 홈페이지
+    return redirect(url_for('home'))
+
+# eplList
+@app.route('/eplList')
+def eplList():
+    # 세션체크
+    #if not 'uid' in session:  # 세션 없으면 false -> 부정 -> 참
+    #    return redirect(url_for('login'))
+    # 데이터 획득
+    amt = 5;  # 한번에 보여줄 양(한페이지에 5개 보여줌)
+    tmp = request.args.get('page')
+    page = 0  # 최종 페이지값 초기값
+    if tmp:  # 전달된 페이지가 있다면(인자값이 전달되면 참) ex) eplList?page=2,...
+        # 페이지 계산 2로 전달되면 1로 계산해야함(쿼리기준)
+        page = int(tmp) - 1 ;
+    # 최종 결과 획득    
+    rows = selectAllEplList(page=page*amt)
+    # 화면처리
+    return render_template('eplList.html', config=config, epls=rows)
+
+# 검색결과
 @app.route('/search', methods=['POST'])
 def search():
     keyword = request.form['keyword']
-    # 디비로 검색어를 보내서 쿼리 수행 후 결과를 받아온다
     tmp = searchSql(keyword)
-    # None이면 json 변환에 문제가 발생하므로 비어있는 리스트로 대체함
     if tmp == None: tmp=[]
-    #print(tmp)
-    # jsonify() : 파이썬 객체를 json 문자열로 처리 -> 전송
-    print(jsonify(tmp))
     return jsonify(tmp)
 
-# 팀 세부정보 보기
-@app.route('/info/<teamName>')
-def info(teamName):
-    q = request.args.get('q')
-    print('q=%s' %q)
-    row = selectTeamName(teamName)
-    # q값이 None이면 그냥 정보보기, update이면 수정하기 이다
-    return render_template('info.html', team = row, flag = q)
-
-# 팀 정보 수정
-@app.route('/updateTeam', methods=['POST'])
-def updateTeam():
-    # 전달된 데이터 중 총경기수와 이름을 획득
-    total = request.form['total']
-    name = request.form['name']
-    # 수정 쿼리 수행
-    result = updateTeamInfo(total,name)
-    # 결과 처리
-    if result:
-        return render_template('alert2.html', msg='수정성공', url='/info/'+name)
-    else:
-        return render_template('alert2.html', msg='수정실패')
-    #print(request.form)
-    #return '수정페이지 %s' %request.form['name']
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=config.debug)
