@@ -1,37 +1,122 @@
-## Welcome to GitHub Pages
+-- 마리아 DB 접속
+-- mysql [-u 사용자명] [-p] [-h host] [데이터베이스명]
+mysql -u root -p
+Enter password : ****
+-- 접속후 프롬프트
+-- 마리아 데이터베이스에 접속했다[디비명표시]
+MariaDB [(none)]>
+-- 사용하고자 하는 디비 지정
+use pythondb;
+MariaDB [(pythondb)]>
 
-You can use the [editor on GitHub](https://github.com/YunJeongL/Yunjeong-Lee/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+-- 데이터베이스의 목적 -> 데이터 저장 
+-- 구조 : row + column 2차원 구조 -> pandas 데이터분석모듈
+-- row = 하나의 record, 레코드는 여러 개의 컬럼 가질 수 있다 
+-- 하나의 데이터베이스에는 여러 개의 테이블이 존재할 수 있다
+-- 여러 테이블들의 컬럼들이 서로 관계를 맺을 수 있다(데이터의 연결)
+-- 연결) => 관계형 데이터베이스 RDBMS <-> No Sql 계열 
+-- 몽고디비,..-> 클라우드, 빅데이터(계속 수집되는 경향),..
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+-- 마리아디비 족보
+-- mysql이 오픈소스기반 사용 -> SUN(Java) 인수 -> 오라클 인수 -> 상업적으로 가게되고 개발자 떨어져나감
+-- 오픈기반에 맞춰 마리아디비 만들어졌고 -> 구글 지원
+-- mysql의 엔터프라이즈 기반 -> aws에서 오로라 디비 발전
 
-### Markdown
+-- 서버에 있는 모든 데이터베이스 보기
+show databases;
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+-- 데이터베이스 생성
+create database <데이터베이스명>;
+create database my_db;
+-- 데이터베이스가 없으면 만들어라
+create database if not exists my_db;
 
-```markdown
-Syntax highlighted code block
+-- sql은 데이터베이스와 개발자가 상호소통하는 언어이다
+-- 데이터베이스 삭제
+drop database my_db;
+drop database if exists my_db;
 
-# Header 1
-## Header 2
-### Header 3
+-- =============================================== --
+-- 테이블 생성, 변경, 삭제 등
+-- =============================================== --
+create table 테이블명(<컬럼정의>, ...);
+-- 컬럼의 구조
+<컬럼명> <데이터타입> 
+[NOT NULL | NULL]
+[DEFAULT <기본값>]
+[AUTO_INCREMENT]
+[UNIQUE[KEY] | PRIMARY KEY]
+[COMMENT '<주석>']
 
-- Bulleted
-- List
+create table employees(
+	id int not null auto_increment primary key,
+	sname varchar(100),
+	gname varchar(100),
+	pname varchar(50),
+	birthday date comment '생년월일'
+);
 
-1. Numbered
-2. List
+-- 생성된 테이블의 생성쿼리 확인 
+show create table employees;
+-- ENGINE=InnoDB DEFAULT CHARSET=utf8 이부분은 마리아디비가 자동으로 추가한 부분 
 
-**Bold** and _Italic_ and `Code` text
+-- 테이블의 구조 보기 
+describe employees;
 
-[Link](url) and ![Image](src)
-```
+-- 테이블 변경
+alter table 테이블이름 <변경내용기술> [,변경내용정의] ...
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+-- 컬럼 추가 (first, after pname, 생략)
+alter table employees
+add username varchar(20)
+after pname;
 
-### Jekyll Themes
+-- 컬럼 변경
+alter table employees
+modify username varchar(30);
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/YunJeongL/Yunjeong-Lee/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+-- 컬럼 삭제
+alter table employees
+drop username;
 
-### Support or Contact
+-- 테이블 삭제
+drop table employees;
+drop table if exists employees;
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+-- =============================================== --
+-- 입력(insert), 수정(update), 삭제(delete)
+-- =============================================== --
+-- 입력
+insert into <테이블명>[<컬럼명>, ...] 
+{values | value} ({<표현식>}|default}, ...pythondb)
+
+-- 컬럼없이 입력 => 전체 입력을 하겠다 -> 순서 주의
+insert into employees
+values(NULL, 'Good', 'miller', 'Kim', '2018-01-01');
+
+-- 특정 컬럼만 입력 -> 이 경우 순서 변경가능
+insert into employees (gname, sname) 
+values('Good2','miller2');
+
+-- 한번에 왕창 넣기
+insert into employees values
+(NULL, 'Good3', 'miller3', NULL, NULL),
+(NULL, 'Good4', 'miller4', NULL, NULL),
+(NULL, 'Good5', 'miller5', NULL, NULL);
+
+-- 다른 테이블에 데이터를 넣기
+insert into employees (sname)
+select name from tbl_users;
+
+-- 파일에서 로드해서 데이터 넣기
+load data infile 'C:/Users/User/Documents/윤정/data.txt'
+into table employees(sname, gname, pname);
+
+-- 기존 데이터 변경
+update <테이블명>
+set 컬럼명={표현식|default}, ..
+where <조건>
+
+-- 특정 조건에 맞는 레코드(로)의 특정 컬럼을 수정
+update employees set pname='LEE'
+where pname='Kim';
